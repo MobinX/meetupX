@@ -1,5 +1,7 @@
+"use client";
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import { useSocket } from './WebSocketCTX';
+import { useEffectOnce } from '@/lib/useEffectOnce';
 
 interface WebRTCContextProps {
     localStream: MediaStream | null;
@@ -25,7 +27,7 @@ export const useWebRTC = () => {
     return context;
 };
 
-export const WebRTCProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const WebRTCProvider: React.FC<{ children: ReactNode, serverList: any }> = ({ children , serverList}) => {
     const [localStream, setLocalStream] = useState<MediaStream | null>(null);
     const [remoteStreams, setRemoteStreams] = useState<RemoteStreamData[]>([]);
     const [peerConnections, setPeerConnections] = useState<{ [peerId: string]: RTCPeerConnection }>({});
@@ -40,7 +42,9 @@ export const WebRTCProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     }, []);
 
     const createPeerConnection = (peerId: string, polite: boolean): RTCPeerConnection => {
-        const peerConnection = new RTCPeerConnection();
+        const peerConnection = new RTCPeerConnection({
+            iceServers: serverList
+        });
         let makingOffer = false;
 
         if (localStream) {
@@ -127,20 +131,24 @@ export const WebRTCProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
     useEffect(() => {
         if (lastMsg) {
-            handleRemoteMessage(lastMsg);
+            handleRemoteMessage(lastMsg.message);
         }
     }, [lastMsg]);
 
-    useEffect(() => {
+    useEffectOnce(()=>{
         peers.forEach(peerId => {
             const peerConnection = createPeerConnection(peerId, true); // Polite peer
-            peerConnection.createOffer().then(offer => {
-                peerConnection.setLocalDescription(offer);
-                sendMsg({ type: 'offer', peerId, sdp: offer });
-            });
+            // peerConnection.createOffer().then(offer => {
+            //     peerConnection.setLocalDescription(offer);
+            //     sendMsg({ type: 'offer', peerId, sdp: offer });
+            // });
         });
 
-        onJoin(peerId => createPeerConnection(peerId, true));
+        // onJoin(peerId => createPeerConnection(peerId, true));
+    })
+
+    useEffect(() => {
+       
         onLeave(peerId => {
             if (peerConnections[peerId]) {
                 peerConnections[peerId].close();

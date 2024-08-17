@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "ably": "^2.3.1",
     "next": "14.2.5",
     "pusher": "^5.2.0",
     "pusher-js": "^8.4.0-rc2",
