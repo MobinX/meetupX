@@ -33,6 +33,7 @@ export const SocketProvider: React.FC<{ children: ReactNode }> = ({ children }) 
             try {
                 const { token, host, name } = await getXirsysTokenAndHost();
                 setUserName(name || "");
+                console.log(name)
                 const signalPath = `${host}/v2/${token}`;
                 setChannelPath(token); // Set the channel path
                 const ws = new WebSocket(signalPath);
@@ -61,7 +62,7 @@ export const SocketProvider: React.FC<{ children: ReactNode }> = ({ children }) 
                         case 'peer_connected':
                             console.log("[Socket] Peer Connected:", fromPeer);
                             setPeers(peers.concat([fromPeer]));
-                            handleOnJoin(fromPeer);
+                            handleOnJoin(fromPeer,name);
                             break;
                         case 'peer_removed':
                             console.log("[Socket] Peer Removed:", fromPeer);
@@ -98,8 +99,8 @@ export const SocketProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         };
     });
 
-    const handleOnJoin = (peerId: string) => {
-        if (peerId != userName) {
+    const handleOnJoin = (peerId: string,name:any) => {
+        if (peerId !== name) {
             console.log("[Socket] Peer Joined Callback:", peerId);
             onJoinCallbacks.forEach(callback => callback(peerId));
         }
