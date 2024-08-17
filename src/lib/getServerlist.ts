@@ -6,17 +6,31 @@ export async function getServerlist() {
     return iceServers;
 }
 
+
+const generateCustomUniqueId = (length = 12) => {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-=@,.';
+    let result = '';
+    const charactersLength = characters.length;
+
+    for (let i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+
+    return result;
+};
+
+
 export async function getXirsysTokenAndHost() {
     try {
         // Get Token
-        const name = prompt("Enter your name:");
+        const name = generateCustomUniqueId(5);
         const tokenResponse = await fetch("https://global.xirsys.net/_token/sigflow?expire=120&k=" + name + "", {
           method: "PUT",
           headers: {
             "Authorization": "Basic " + Buffer.from("mobin:e2d2ad94-0e2b-11eb-85a4-0242ac150006").toString("base64")
           }
         });
-        const token = await tokenResponse.text();
+        const token = (await tokenResponse.json()).v;
         console.log("Token Response:", token);
     
         // Get Host
@@ -26,7 +40,7 @@ export async function getXirsysTokenAndHost() {
             "Authorization": "Basic " + Buffer.from("mobin:e2d2ad94-0e2b-11eb-85a4-0242ac150006").toString("base64")
           }
         });
-        const host = await hostResponse.text();
+        const host = (await hostResponse.json()).v;
         console.log("Host Response:", host);
     
         return { token, host,name }

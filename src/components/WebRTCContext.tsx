@@ -67,7 +67,7 @@ export const WebRTCProvider: React.FC<{ children: ReactNode, serverList: any }> 
 
         peerConnection.onicecandidate = event => {
             if (event.candidate) {
-                sendMsg({ type: 'candidate', peerId, candidate: event.candidate });
+                sendMsg({ type: 'candidate', peerId, candidate: event.candidate },peerId);
             }
         };
 
@@ -75,7 +75,7 @@ export const WebRTCProvider: React.FC<{ children: ReactNode, serverList: any }> 
             try {
                 makingOffer = true;
                 await peerConnection.setLocalDescription();
-                sendMsg({ type: 'offer', peerId, sdp: peerConnection.localDescription });
+                sendMsg({ type: 'offer', peerId, sdp: peerConnection.localDescription }, peerId);
             } catch (err) {
                 console.error('Error during negotiation:', err);
             } finally {
@@ -102,7 +102,7 @@ export const WebRTCProvider: React.FC<{ children: ReactNode, serverList: any }> 
 
     const handleRemoteMessage = async (msg: any) => {
         const { peerId, sdp, candidate, type } = msg;
-        const peerConnection = peerConnections[peerId] || createPeerConnection(peerId, true);
+        const peerConnection = peerConnections[peerId] || createPeerConnection(peerId, false);
         const polite = peers.some(peer => peer === peerId);
 
         try {
@@ -115,7 +115,7 @@ export const WebRTCProvider: React.FC<{ children: ReactNode, serverList: any }> 
 
                 if (type === 'offer') {
                     await peerConnection.setLocalDescription();
-                    sendMsg({ type: 'answer', peerId, sdp: peerConnection.localDescription });
+                    sendMsg({ type: 'answer', peerId, sdp: peerConnection.localDescription }, peerId);
                 }
             } else if (type === 'candidate') {
                 try {
@@ -136,18 +136,18 @@ export const WebRTCProvider: React.FC<{ children: ReactNode, serverList: any }> 
     }, [lastMsg]);
 
     useEffectOnce(()=>{
-        peers.forEach(peerId => {
-            const peerConnection = createPeerConnection(peerId, true); // Polite peer
-            // peerConnection.createOffer().then(offer => {
-            //     peerConnection.setLocalDescription(offer);
-            //     sendMsg({ type: 'offer', peerId, sdp: offer });
-            // });
-        });
+        // peers.forEach(peerId => {
+        //     const peerConnection = createPeerConnection(peerId, true); // Polite peer
+        //     // peerConnection.createOffer().then(offer => {
+        //     //     peerConnection.setLocalDescription(offer);
+        //     //     sendMsg({ type: 'offer', peerId, sdp: offer },peerId);
+        //     // });
+        // });
 
-        // onJoin(peerId => createPeerConnection(peerId, true));
     })
 
     useEffect(() => {
+        onJoin(peerId => { console.log("[WebRTC] Peer Joined",peerId);  createPeerConnection(peerId, true)});
        
         onLeave(peerId => {
             if (peerConnections[peerId]) {
@@ -159,7 +159,7 @@ export const WebRTCProvider: React.FC<{ children: ReactNode, serverList: any }> 
                 });
             }
         });
-    }, [peers, onJoin, onLeave]);
+    }, [ onJoin, onLeave]);
 
     const toggleCamera = async () => {
         if (localStream) {
