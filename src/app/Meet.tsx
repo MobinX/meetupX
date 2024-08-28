@@ -171,7 +171,7 @@ export default function Meet({ iceServers }: { iceServers: any }) {
     return <div className="relative w-full h-screen flex items-center justify-center">
         <div className="w-full h-full flex justify-center items-center px-4 py-6">
             <div className="w-full h-full grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-4 justify-center items-center">
-                <ProfileCard name={ably.auth.clientId+" (YOU)"} isAudioOn={isAudioOn} isVideoOn={isVideoOn}  audioStream={audioStream} videoStream={videoStream}  />
+                <ProfileCard name={ably.auth.clientId+" (YOU)"} isAudioOn={false} isVideoOn={isVideoOn}  audioStream={audioStream} videoStream={videoStream}  />
             {isScreenShareOn && <ProfileCard name={ably.auth.clientId+" (YOU)"} isAudioOn={false} isVideoOn={isScreenShareOn}  audioStream={audioStream} videoStream={screenShareStream}  />}
 
                 {peers.map((peer,key) => <Fragment key={key}>
