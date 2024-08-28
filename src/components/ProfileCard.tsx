@@ -68,10 +68,10 @@ const Avatar = ({ name, className }: { name: string, className?: string }) => {
     )
   }
   
- export const ProfileCard = ({ audioStream, videoStream,  isVideoOn, isAudioOn, name }: { name: string, isVideoOn: boolean, isAudioOn: boolean, videoStream: MediaStream | null, audioStream: MediaStream | null,  }) => {
+ export const ProfileCard = ({ audioStream, videoStream,  isVideoOn, isAudioOn, name,onClick,className="" }: { name: string, isVideoOn: boolean, isAudioOn: boolean, videoStream: MediaStream | null, audioStream: MediaStream | null, onClick: () => void ,className?: string}) => {
   
     return (
-      <div className="relative min-h-48 w-auto min-w-72 bg-black rounded-2xl">
+      <div className={`relative min-h-48 w-full  min-w-72 bg-black rounded-2xl ${className}`} onClick={onClick}>
         <Avatar className="absolute bottom-3 left-2" name={name} />
         <div className="absolute top-2 right-2 flex justify-center items-center w-6 h-6 text-white">
           {isAudioOn ? <Volume2 className="w-6 h-6" /> : <VolumeX className="w-6 h-6" />}

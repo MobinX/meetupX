@@ -82,6 +82,7 @@ export default function Meet({ iceServers }: { iceServers: any }) {
     const [myMsg, setMyMsg] = useState<string>("")
     const [allMsg, setAllMsg] = useState<{ from: string, msg: string }[]>([])
     const [fileProgress, setFileProgress] = useState<{ id: string, progress: number, url?: string | null, fileState?: FileState }[]>([])
+    const [pinId,setPinId] = useState<string|null>(null)
     useEffect(() => {
         console.log(peers)
     }, [peers])
@@ -169,17 +170,34 @@ export default function Meet({ iceServers }: { iceServers: any }) {
 
 
     return <div className="relative w-full h-screen flex items-center justify-center">
-        <div className="w-full h-full flex justify-center items-center px-4 py-6">
-            <div className="w-full h-full grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-4 justify-center items-center">
-                <ProfileCard name={ably.auth.clientId+" (YOU)"} isAudioOn={false} isVideoOn={isVideoOn}  audioStream={audioStream} videoStream={videoStream}  />
-            {isScreenShareOn && <ProfileCard name={ably.auth.clientId+" (YOU)"} isAudioOn={false} isVideoOn={isScreenShareOn}  audioStream={audioStream} videoStream={screenShareStream}  />}
 
-                {peers.map((peer,key) => <Fragment key={key}>
-                    <ProfileCard  name={peer.socketId} isAudioOn={peer.isAudioOn} isVideoOn={peer.isVideoOn}  audioStream={peer.audioStream} videoStream={peer.videoStream}  />
-                    {peer.isScreenShareOn && <ProfileCard name={peer.socketId+ " (SCREENSHARE)" +(peer.isScreenShareOn)} isAudioOn={false} isVideoOn={peer.isScreenShareOn} audioStream={peer.audioStream} videoStream={peer.screenShareStream}  />}
-                </Fragment>)}
-                    
+        <div className="w-full h-full flex justify-center items-center px-4 py-6 gap-4">
+            {pinId && <div className="w-2/3 h-full flex justify-center items-center flex-1 px-2" onClick={() => setPinId(null)}>
+            {pinId == ably.auth.clientId ? (
+                isScreenShareOn ? (
+                    <ProfileCard className="h-full" name={ably.auth.clientId + " (YOU)"} isAudioOn={false} isVideoOn={isScreenShareOn} audioStream={audioStream} videoStream={screenShareStream} onClick={() => setPinId(null)} />
+                ):(
+                <ProfileCard className="h-full" name={ably.auth.clientId + " (YOU)"} isAudioOn={false} isVideoOn={isVideoOn} audioStream={audioStream} videoStream={videoStream}  onClick={() => setPinId(null)} />)
+            ) : (
+               peers.find(peer => peer.socketId == pinId)?.isScreenShareOn ? (
+                    <ProfileCard className="h-full" name={peers.find(peer => peer.socketId == pinId)?.socketId + " (SCREENSHARE)" + (peers.find(peer => peer.socketId == pinId)?.isScreenShareOn)} isAudioOn={false} isVideoOn={peers.find(peer => peer.socketId == pinId)!.isScreenShareOn} audioStream={peers.find(peer => peer.socketId == pinId)!.audioStream} videoStream={peers.find(peer => peer.socketId == pinId)!.screenShareStream} onClick={() => setPinId(null)} />
+                ):
+                (
+                    <ProfileCard className="h-full" name={peers.find(peer => peer.socketId == pinId)!.socketId} isAudioOn={peers.find(peer => peer.socketId == pinId)!.isAudioOn} isVideoOn={peers.find(peer => peer.socketId == pinId)!.isVideoOn} audioStream={peers.find(peer => peer.socketId == pinId)!.audioStream} videoStream={peers.find(peer => peer.socketId == pinId)!.videoStream} onClick={() => setPinId(null)} />
 
+                )
+            )
+        }
+            </div>}
+            <div className={` h-full grid overflow-auto ${pinId == null ? " w-full lg:grid-cols-3 md:grid-cols-2 grid-cols-1"  : "w-1/3 grid-cols-1 grid-flow-row items-start "}  gap-4 justify-center items-center`}>
+               { pinId !== ably.auth.clientId && <ProfileCard name={ably.auth.clientId + " (YOU)"} isAudioOn={false} isVideoOn={isVideoOn} audioStream={audioStream} videoStream={videoStream} onClick={() => setPinId(ably.auth.clientId)} />}
+                {isScreenShareOn && (pinId?.replace("sc","")) !== ably.auth.clientId && <ProfileCard name={ably.auth.clientId + " (YOU)"} isAudioOn={false} isVideoOn={isScreenShareOn} audioStream={audioStream} videoStream={screenShareStream} onClick={() => setPinId("sc" + ably.auth.clientId)} />}
+                {peers.map((peer, key) =>
+                    <Fragment key={key}>
+                     {  pinId !== peer.socketId && <ProfileCard name={peer.socketId} isAudioOn={peer.isAudioOn} isVideoOn={peer.isVideoOn} audioStream={peer.audioStream} videoStream={peer.videoStream} onClick={() => setPinId(peer.socketId)}/>}
+                        { (pinId?.replace("sc","")) !== peer.socketId && peer.isScreenShareOn && <ProfileCard name={peer.socketId + " (SCREENSHARE)" + (peer.isScreenShareOn)} isAudioOn={false} isVideoOn={peer.isScreenShareOn} audioStream={peer.audioStream} videoStream={peer.screenShareStream} onClick={() => setPinId("sc" + peer.socketId)}/>}
+                    </Fragment>
+                )}
             </div>
         </div>
         <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2  z-10 rounded-3xl bg-gray-900">
