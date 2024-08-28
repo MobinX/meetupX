@@ -9,8 +9,9 @@ export default async function Home() {
   const iceServers = await response.json();
   console.log(iceServers);
   return (
-    <div>
+    <div className="w-full h-full min-h-screen flex items-center justify-center ">
       <Meet iceServers={iceServers} />
+     
     </div>
   );
 }
