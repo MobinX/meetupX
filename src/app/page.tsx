@@ -1,18 +1,16 @@
-import { WebRTCProvider } from "@/components/WebRTCContext";
-import WebRTCComponent from "@/components/WebRTCRenderer";
-import { SocketProvider } from "@/components/WebSocketCTX";
-import { getServerlist } from "@/lib/getServerlist";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 
+const Meet = dynamic(() => import("./Meet"), { ssr: false });
 
 
 export default async function Home() {
-  const serverList = await getServerlist();
+  const response = await fetch("https://virsys.metered.live/api/v1/turn/credentials?apiKey=ca9f4e60bf446fc29401ccb1fa904d110708");
+  const iceServers = await response.json();
+  console.log(iceServers);
   return (
-    <SocketProvider>
-      <WebRTCProvider serverList={serverList}>
-        <WebRTCComponent />
-      </WebRTCProvider>
-    </SocketProvider>
+    <div>
+      <Meet iceServers={iceServers} />
+    </div>
   );
 }
