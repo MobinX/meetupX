@@ -84,7 +84,7 @@ export const ProfileCard = ({ audioStream, videoStream, isVideoOn, isAudioOn, na
         </div>
       }
 
-      <div className="absolute inset-0 w-full h-full bg-transparent z-50"></div>
+      <div className="absolute inset-0 w-full h-full transparent z-50"></div>
 
       {isVideoOn && videoStream && <VIdeo stream={videoStream!} className="absolute inset-0 w-full h-full" />}
 
