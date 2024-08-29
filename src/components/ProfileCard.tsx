@@ -2,11 +2,11 @@
 import { Volume2, VolumeX } from "lucide-react"
 import { useRef, useState, useEffect } from "react"
 
-const Avatar = ({ name, className }: { name: string, className?: string }) => {
+export const Avatar = ({ name, className }: { name: string, className?: string }) => {
 
   return (
     <div className={`bg-purple-700 w-6 h-6 rounded-full z-30  ${className}`}>
-      <p className="text-white text-center">{name}</p>
+      <p className="text-white text-center">{name.charAt(0).toUpperCase()}</p>
     </div>
   )
 }
@@ -84,7 +84,7 @@ export const ProfileCard = ({ audioStream, videoStream, isVideoOn, isAudioOn, na
         </div>
       }
 
-      <div className="absolute inset-0 w-full h-full transparent z-50"></div>
+      <div className="absolute inset-0 w-full h-full bg-transparent z-50"></div>
 
       {isVideoOn && videoStream && <VIdeo stream={videoStream!} className="absolute inset-0 w-full h-full" />}
 
