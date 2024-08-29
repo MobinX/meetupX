@@ -109,10 +109,10 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
-"@mobinx/easymeet@^1.0.4":
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/@mobinx/easymeet/-/easymeet-1.0.4.tgz#d1ecd7aa59776eb1d549de801556c6b8c8a9a72b"
-  integrity sha512-7RCmH6wIdVTDAahU0IvzTPRyiZ51/wvTOaFQvgb3/E2ruagoxcIDaQ8120Ggr3DrWu+5YnVdDJZwMsuPM0E6oQ==
+"@mobinx/easymeet@^1.0.5":
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/@mobinx/easymeet/-/easymeet-1.0.5.tgz#f116691e732ad4f5a2b4d1dad8a83da7a56e7785"
+  integrity sha512-M0eNoUXXcE1k25Tn6V1Qu1yNKf+XnBdAAMoJmcOe9TeXhZzGKWsOl0HsWC6zBaEL37MBO+eMiDnTZ+DJL8WPkg==
   dependencies:
     process "^0.11.10"
     react "^16.9.0 || ^17 || ^18"
