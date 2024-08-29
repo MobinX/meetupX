@@ -53,7 +53,7 @@ const LinkTagger = ({ text }: { text: string }) => {
                 if (links?.some((link) => link === word)) {
                     return (
                         <Fragment key={index}>
-                            <a href={word} className="text-blue-500">{word}</a>
+                            <a href={word} className="text-blue-500" target="_blank">{word}</a>
                             <span> </span>
                         </Fragment>
                     );
