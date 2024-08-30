@@ -1,5 +1,7 @@
 import Image from "next/image";
 import dynamic from "next/dynamic";
+export const runtime = "edge";
+
 
 const Meet = dynamic(() => import("../Meet"), { ssr: false });
 

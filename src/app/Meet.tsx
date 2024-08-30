@@ -48,7 +48,7 @@ const LinkTagger = ({ text }: { text: string }) => {
     const links = text.match(/((https?:\/\/|www\.)[^\s]+)/g);
 
     return (
-        <div>
+        <>
             {text.split(' ').map((word, index) => {
                 if (links?.some((link) => link === word)) {
                     return (
@@ -66,7 +66,7 @@ const LinkTagger = ({ text }: { text: string }) => {
                     );
                 }
             })}
-        </div>
+        </>
     );
 };
 
@@ -74,6 +74,7 @@ const LinkTagger = ({ text }: { text: string }) => {
 
 
 const Msg = ({ from, msg, file, type, url = "", myId,name="" }: MsgType) => {
+    console.log("msgtype", type)
     return (
         <div className={`flex gap-2 w-full ${myId === from ? "flex-row-reverse" : "flex-row"}`} >
             <Avatar name={name} />
@@ -195,6 +196,18 @@ export default function Meet({ iceServers }: { iceServers: any }) {
         }
     }
 
+    const getCompletedFile = (file: FileState) => {
+        if(file?.completedSize == file?.totalSize){
+            let contentArrayblob = new Blob(
+                file.receivedArrayBuffer
+              );
+              let objectURL = URL.createObjectURL(contentArrayblob);
+              
+              return objectURL;
+        }
+        return null
+    }
+
     useEffect(() => {
         console.log("j", pinId?.Id)
     }, [pinId])
@@ -202,22 +215,30 @@ export default function Meet({ iceServers }: { iceServers: any }) {
         console.log("p", peers)
     }, [peers])
     useEffect(() => {
+        console.log(fileSharingState)
         if (fileSharingState) {
+            console.log(fileSharingState)
             let name = peers.find(peer => peer.socketId == fileSharingState.peerId)?.info?.name
-
             setAllMsg(prev => {
                 let fileMsgIndx = prev.findIndex(item => item?.file?.fileId == fileSharingState.fileId)
                 if (fileMsgIndx == -1) {
-                    return prev.concat([{ from: fileSharingState.peerId, file: fileSharingState, type: "progress", idx: prev.length,name:name ? name : fileSharingState.peerId }])
+                    console.log("file sharing no indx",getCompletedFile(fileSharingState), fileSharingState.peerId)
+                    if(getCompletedFile(fileSharingState) != null){
+                        return prev.concat([{ from: fileSharingState.peerId, url: getCompletedFile(fileSharingState), type: "file", idx: prev.length,name:name ? name: fileSharingState.peerId }])
+                    }
+                    return prev.concat([{ from: fileSharingState.peerId, file: fileSharingState, type: "progress", idx: prev.length,name:name ? name: fileSharingState.peerId }])
                 }
-                else {
-
+                else if(prev[fileMsgIndx].url == null) {
+                    console.log("file sharing with indx", fileMsgIndx, getCompletedFile(fileSharingState))
                     let temp = prev;
+                    if(getCompletedFile(fileSharingState) != null){
+                        temp[fileMsgIndx] = { ...prev[fileMsgIndx], url: getCompletedFile(fileSharingState) }
+                        return temp
+                    }
                     temp[fileMsgIndx] = { ...prev[fileMsgIndx], file: fileSharingState }
                     return temp
-
-
                 }
+                return prev;
             })
         }
 
@@ -229,7 +250,7 @@ export default function Meet({ iceServers }: { iceServers: any }) {
         console.log(fileSharingCompleted)
         if (fileSharingCompleted) {
             setAllMsg(prev => {
-                let fileMsgIndx = allMsg.findIndex(item => item?.file?.fileId == fileSharingCompleted.file.fileId)
+                let fileMsgIndx = prev.findIndex(item => item?.file?.fileId == fileSharingCompleted.file.fileId)
                 let fileExt = fileSharingCompleted.file.fileName.split(".").pop();
                 let ftype: "text" | "image" | "file" | "video" | "audio" | "progress" = fileExt ? ([
                     "mp4", "webm", "ogg", "mov", "avi", "flv", "wmv", "mkv"
@@ -241,15 +262,28 @@ export default function Meet({ iceServers }: { iceServers: any }) {
                             "jpg", "jpeg", "png", "gif", "bmp", "svg", "webp"
                         ].includes(fileExt) ? "image" : "file") : "file";
 
+                
+                        
+                
                 if (fileMsgIndx != -1) {
                     let temp = prev;
-                    temp[fileMsgIndx] = { ...allMsg[fileMsgIndx], file: fileSharingCompleted.file, type: ftype, url: fileSharingCompleted.objectUrl,  }
+                    temp[fileMsgIndx] = { ...prev[fileMsgIndx], file: fileSharingCompleted.file, type: ftype, url: fileSharingCompleted.objectUrl,  }
                     return temp
                 }
                 return prev;
             })
+
+            setAllMsg(prev => prev)
+            setAllMsg(prev => prev)
+            setAllMsg(prev => prev)
+
         }
-    },[fileSharingCompleted,allMsg,fileSharingState])
+    },[fileSharingCompleted])
+
+    useEffect(() => {
+        console.log("allmsg", allMsg)
+
+    }, [allMsg])
 
     useEffect(() => {
         if (newDataChannelMsg) {
