@@ -143,6 +143,7 @@ export default function Meet({ iceServers }: { iceServers: any }) {
     const [startMeeting, setStartMeeting] = useState<boolean>(false)
     const sendUIMsg = (msg: any) => {
         try {
+            if(msg == "") return
             sendDataChannelMsg(msg, "all")
             setAllMsg(prev => prev.concat([{ from: ably.auth.clientId, msg, type: "text", idx: prev.length,name:myName }]))
             setMyMsg("")
@@ -340,11 +341,11 @@ export default function Meet({ iceServers }: { iceServers: any }) {
 
                     <div className="flex flex-col justify-center items-center gap-2">
                         <input className="input rounded2xl input-primary" placeholder="Username" value={myName} onChange={(e) => setMyName(e.target.value)} />
-                        {!meetingUrl && (<button className="btn w-full btn-primary" onClick={() => createMeeting()}>Create Meeting</button>)}
+                        {!meetingUrl && (<button className="btn w-full btn-primary" onClick={() => createMeeting()} onKeyDown={(e) => e.key === "Enter" && createMeeting()}>Create Meeting</button>)}
                     </div>
 
                     <div className="flex flex-col justify-center items-center gap-2">
-                        {!meetingUrl && <input className="input rounded2xl input-primary" placeholder="code" value={inpLink || ""} onChange={(e) => setInpLink(e.target.value)} />}
+                        {!meetingUrl && <input className="input rounded2xl input-primary" placeholder="code" value={inpLink || ""} onChange={(e) => setInpLink(e.target.value)} onKeyDown={(e) => e.key === "Enter" && joinMeeting()} />}
                         <button className="btn w-full btn-primary" onClick={() => joinMeeting()}>Join Meeting</button>
                     </div>
                 </div>
@@ -399,7 +400,7 @@ export default function Meet({ iceServers }: { iceServers: any }) {
                             <button className="btn btn-circle btn-ghost btn-sm bg-transparent text-red-500" onClick={() => setIschatBoxOpen(false)}><X className="w-6 h-6" /></button>
                         </div>
                         <div className="flex flex-col w-full h-full justify-start items-center flex-1 overflow-y-auto gap-2 px-3">
-                            {allMsg.map(({ type, msg, from, url, file, name }, key) => (
+                            {/* {allMsg.map(({ type, msg, from, url, file, name }, key) => (
                                     <div className={`flex gap-2 w-full ${ably.auth.clientId === from ? "flex-row-reverse" : "flex-row"}`} key={key} >
                                     <Avatar name={name || from} />
                                     {type === "text" && <p className="text-sm bg-gray-700 rounded-lg p-2 text-white w-full"><LinkTagger text={msg || ""} /></p>}
@@ -433,16 +434,16 @@ export default function Meet({ iceServers }: { iceServers: any }) {
                                         <progress value={file?.progress} max="100" className="w-full"></progress>
                                     </div>}
                                 </div>
-                            ))}
+                            ))} */}
 
 
 
 
-                            {/* {allMsg.map((msg, key) => <Msg key={key} type={msg.type} msg={msg ? msg.msg : null} from={msg.from} url={msg.url ? msg.url : null} file={msg.file ? msg.file : null} myId={ably.auth.clientId} name={msg.name ? msg.name : msg.from} />)} */}
+                            {allMsg.map((msg, key) => <Msg key={key} type={msg.type} msg={msg ? msg.msg : null} from={msg.from} url={msg.url ? msg.url : null} file={msg.file ? msg.file : null} myId={ably.auth.clientId} name={msg.name ? msg.name : msg.from} />)}
                         </div>
 
                         <div className="flex justify-between items-center p-3 w-full">
-                            <input type="text" className="input input-bordered input-sm bg-gray-600 text-white placeholder:text-white w-full max-w-xs" value={myMsg} onChange={(e) => setMyMsg(e.target.value)} />
+                            <input type="text" className="input input-bordered input-sm bg-gray-600 text-white placeholder:text-white w-full max-w-xs" value={myMsg} onChange={(e) => setMyMsg(e.target.value)} onKeyDown={(e) => e.key === "Enter" && sendUIMsg(myMsg)}/>
                             <div className="flex gap-3">
                                 <input type="file" className="hidden" ref={fileInputRef} onChange={(e) => { if (e.target.files) sendUIFile(e.target.files[0]); }} />
                                 <button className="btn btn-circle btn-ghost btn-sm bg-transparent " onClick={() => { if (fileInputRef.current) fileInputRef.current.click() }}><PlusCircle className="w-6 h-6" /></button>
