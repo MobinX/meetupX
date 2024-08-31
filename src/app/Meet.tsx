@@ -202,7 +202,7 @@ export default function Meet({ iceServers }: { iceServers: any }) {
             setFrame(1)
         }
         else {
-            alert("enter your name")
+            alert("enter your name and code accuretly")
         }
     }
 
