@@ -6,21 +6,23 @@ import { FileState } from "@mobinx/easymeet";
 import { Camera, CameraOff, DownloadCloudIcon, MessageSquareShare, Mic, MicOff, PlusCircle, ScreenShare, ScreenShareOff, Send, X } from "lucide-react";
 import { Avatar, ProfileCard } from "@/components/ProfileCard";
 import { usePathname } from "next/navigation";
+import { curvedFont } from "@/components/fonts";
+import Image from "next/image";
 
 const ably = new Ably.Realtime({ key: 'YSXfdw.ksCpsA:Bf6jKYu4LPPpMfiFkSMJrZ4q4ArLDkuBf7bJCPxKQUo', clientId: Math.random().toString(36).substring(7) })
 ably.connection.once('connected').then(() => {
     console.log('Connected to Ably!');
 })
-let channel:Ably.RealtimeChannel;
+let channel: Ably.RealtimeChannel;
 
 
 async function sendmsg(msg: any, to: any) {
     console.log("sendmsg", msg, to);
-    try{
-    await channel.publish('greeting', { data: msg, clientId: ably.auth.clientId, to: to });
-    console.log('message sent: ', msg);
+    try {
+        await channel.publish('greeting', { data: msg, clientId: ably.auth.clientId, to: to });
+        console.log('message sent: ', msg);
     }
-    catch(err){
+    catch (err) {
         console.log(err)
         alert("something went wrong pls , try again or refresh")
     }
@@ -73,7 +75,7 @@ const LinkTagger = ({ text }: { text: string }) => {
 
 
 
-const Msg = ({ from, msg, file, type, url = "", myId,name="" }: MsgType) => {
+const Msg = ({ from, msg, file, type, url = "", myId, name = "" }: MsgType) => {
     console.log("msgtype", type)
     return (
         <div className={`flex gap-2 w-full ${myId === from ? "flex-row-reverse" : "flex-row"}`} >
@@ -106,7 +108,7 @@ const Msg = ({ from, msg, file, type, url = "", myId,name="" }: MsgType) => {
                 <div className="flex justify-end items-center w-full">
                     <p className="text-white">{Math.round(file?.progress || 0)}%</p>
                 </div>
-                <progress value={file?.progress} max="100" className="w-full"></progress>
+                <progress value={file?.progress} max="100" className="w-full progress  progress-accent "></progress>
             </div>}
         </div>
     )
@@ -127,12 +129,12 @@ export default function Meet({ iceServers }: { iceServers: any }) {
     const pathname = usePathname()
 
     const meetingUrl = pathname == "/" ? null : pathname.split("/")[1]
-    console.log(meetingUrl,pathname)
+    console.log(meetingUrl, pathname)
     const [myName, setMyName] = useState<string>("")
     const [frame, setFrame] = useState<number>(0)
     const [channelName, setChannelName] = useState<string | null>(meetingUrl)
-    const [inpLink, setInpLink] = useState<string|null>(meetingUrl)
-
+    const [inpLink, setInpLink] = useState<string | null>(meetingUrl)
+    const [taostMsg, setToastMsg] = useState<string | null>(null)
     const { isSystemReady, joinExistingPeer, joinNewPeer, leavePeer, sendFile, fileSharingCompleted, fileSharingState, onSocketMessage, sendDataChannelMsg, newDataChannelMsg, toggleAudio, toggleCamera, toggleScreenShare, isAudioOn, isVideoOn, isScreenShareOn, audioStream, videoStream, screenShareStream, peers } = useEasyMeet(ably.auth.clientId, iceServers, sendmsg);
     const [myMsg, setMyMsg] = useState<string>("")
     const [allMsg, setAllMsg] = useState<MsgType[]>([])
@@ -143,9 +145,9 @@ export default function Meet({ iceServers }: { iceServers: any }) {
     const [startMeeting, setStartMeeting] = useState<boolean>(false)
     const sendUIMsg = (msg: any) => {
         try {
-            if(msg == "") return
+            if (msg == "") return
             sendDataChannelMsg(msg, "all")
-            setAllMsg(prev => prev.concat([{ from: ably.auth.clientId, msg, type: "text", idx: prev.length,name:myName }]))
+            setAllMsg(prev => prev.concat([{ from: ably.auth.clientId, msg, type: "text", idx: prev.length, name: myName }]))
             setMyMsg("")
         }
         catch (err) {
@@ -154,12 +156,19 @@ export default function Meet({ iceServers }: { iceServers: any }) {
         }
     }
 
+    const showToast = (msg: string) => {
+        setToastMsg(msg)
+        setTimeout(() => {
+            setToastMsg(null)
+        }, 3000)
+    }
     const sendUIFile = (file: File) => {
         try {
             console.log(file)
             peers.forEach(peer => {
                 sendFile(peer.socketId, file)
             })
+            showToast("All streams are tamporary disable for faster transfer")
         }
         catch (err) {
             console.log(err)
@@ -198,13 +207,13 @@ export default function Meet({ iceServers }: { iceServers: any }) {
     }
 
     const getCompletedFile = (file: FileState) => {
-        if(file?.completedSize == file?.totalSize){
+        if (file?.completedSize == file?.totalSize) {
             let contentArrayblob = new Blob(
                 file.receivedArrayBuffer
-              );
-              let objectURL = URL.createObjectURL(contentArrayblob);
-              
-              return objectURL;
+            );
+            let objectURL = URL.createObjectURL(contentArrayblob);
+
+            return objectURL;
         }
         return null
     }
@@ -222,18 +231,18 @@ export default function Meet({ iceServers }: { iceServers: any }) {
             let name = peers.find(peer => peer.socketId == fileSharingState.peerId)?.info?.name
             setAllMsg(prev => {
                 let temp: MsgType[] = []
-                for(let item of prev){
+                for (let item of prev) {
                     if (item?.file?.fileId !== fileSharingState.fileId) {
                         temp.push(item)
                     }
                 }
-                temp.push({ from: fileSharingState.peerId, file: fileSharingState, type: "progress", idx: prev.length,name:name ? name: fileSharingState.peerId })
+                temp.push({ from: fileSharingState.peerId, file: fileSharingState, type: "progress", idx: prev.length, name: name ? name : fileSharingState.peerId })
                 return temp
-                }
-            )    
-            console.log("allmsg*******************", allMsg)      
+            }
+            )
+            console.log("allmsg*******************", allMsg)
         }
-    },[fileSharingState,peers])
+    }, [fileSharingState, peers])
     useEffect(() => {
         console.log(fileSharingCompleted)
         if (fileSharingCompleted) {
@@ -251,12 +260,12 @@ export default function Meet({ iceServers }: { iceServers: any }) {
                             "jpg", "jpeg", "png", "gif", "bmp", "svg", "webp"
                         ].includes(fileExt) ? "image" : "file") : "file";
                 let temp: MsgType[] = []
-                for(let item of prev){
+                for (let item of prev) {
                     if (item?.file?.fileId != fileSharingCompleted.file.fileId) {
                         temp.push(item)
                     }
                 }
-                temp.push({ from: fileSharingCompleted.file.peerId, file: fileSharingCompleted.file, type: ftype, idx: prev.length, name: name ? name : fileSharingCompleted.file.peerId ,url:fileSharingCompleted.objectUrl})
+                temp.push({ from: fileSharingCompleted.file.peerId, file: fileSharingCompleted.file, type: ftype, idx: prev.length, name: name ? name : fileSharingCompleted.file.peerId, url: fileSharingCompleted.objectUrl })
                 return temp;
             })
 
@@ -265,12 +274,18 @@ export default function Meet({ iceServers }: { iceServers: any }) {
             setAllMsg(prev => prev)
 
         }
-    },[fileSharingCompleted,peers])
+    }, [fileSharingCompleted, peers])
+
 
     useEffect(() => {
-        console.log("allmsg", allMsg)
+        setPinId(prev => {
+            for (let peer of peers) {
+                if (peer.socketId == prev?.Id && prev?.type === "sc" && peer?.isScreenShareOn == false) return null
+            }
+            return prev
+        })
+    }, [peers])
 
-    }, [allMsg])
 
     useEffect(() => {
         if (newDataChannelMsg) {
@@ -280,17 +295,17 @@ export default function Meet({ iceServers }: { iceServers: any }) {
                 msg: JSON.parse(newDataChannelMsg.msg),
                 type: "text",
                 idx: prev.length,
-                name : name ? name : newDataChannelMsg.from
+                name: name ? name : newDataChannelMsg.from
             }]))
         }
-    }, [newDataChannelMsg,peers])
+    }, [newDataChannelMsg, peers])
     useEffect(() => {
         async function init() {
             if (!isInit.current && startMeeting && channelName && myName) {
                 if (isSystemReady) {
                     channel = ably.channels.get(channelName);
                     console.log("isSystemReady");
-                    channel.presence.enter({name: myName});
+                    channel.presence.enter({ name: myName });
 
                     await channel.subscribe('greeting', async (message) => {
                         if (message.clientId === ably.auth.clientId) {
@@ -306,7 +321,7 @@ export default function Meet({ iceServers }: { iceServers: any }) {
                             return;
                         }
                         console.log("informAboutNewConnection", member);
-                        joinNewPeer(member.clientId,{name:member.data.name});
+                        joinNewPeer(member.clientId, { name: member.data.name });
                     });
 
                     channel.presence.subscribe('leave', async function (member) {
@@ -320,7 +335,7 @@ export default function Meet({ iceServers }: { iceServers: any }) {
                         console.log("userconnected", other_users);
                         if (other_users) {
                             for (var i = 0; i < other_users.length; i++) {
-                                if (other_users[i].clientId !== ably.auth.clientId) joinExistingPeer(other_users[i].clientId,  { name: other_users[i].data.name });
+                                if (other_users[i].clientId !== ably.auth.clientId) joinExistingPeer(other_users[i].clientId, { name: other_users[i].data.name });
                             }
                         }
                     });
@@ -331,23 +346,48 @@ export default function Meet({ iceServers }: { iceServers: any }) {
         }
 
         init();
-    }, [isSystemReady, joinExistingPeer, joinNewPeer, leavePeer, onSocketMessage, startMeeting, channelName, myName, ]);
+    }, [isSystemReady, joinExistingPeer, joinNewPeer, leavePeer, onSocketMessage, startMeeting, channelName, myName,]);
 
 
     return (
         frame == 0 ?
-            <div className="w-full h-screen flex  justify-center items-center " data-theme="light">
-                <div className="flex flex-col justify-center items-center gap-6 w-full ">
-
-                    <div className="flex flex-col justify-center items-center gap-2">
+            <div className="w-full h-screen flex  justify-center items-center " data-theme="dark">
+                <div className="hidden lg:flex w-2/3 h-full  flex-col justify-start py-20 items-center gap-6 bg-[url('/bgHome.jpeg')] bg-no-repeat bg-center bg-cover rounded-tr-3xl rounded-br-3xl" >
+                    <h1 className={`text-7xl my-4 font-semibold text-white ${curvedFont.className} `}>
+                        Disposable Meeting
+                    </h1>
+                    <p className={`text-xl text-white ml-8 ${curvedFont.className} `}>
+                        Have Meeting in One Click
+                    </p>
+                </div>
+                <div className={`relative flex flex-col justify-start ${meetingUrl ? "py-36" : "py-[2.8rem]"} items-center gap-6 w-full lg:w-1/3 h-full`}>
+                    <div className="flex justify-center items-center gap-2 w-full my-3">
+                        <Image src="/logo.png" alt="logo" width={100} height={100} className="w-16 h-16" />
+                        <h1 className="text-2xl font-bold text-white">MeetUp</h1>
+                    </div>
+                    <div className="flex flex-col justify-center items-center gap-6">
                         <input className="input rounded2xl input-primary" placeholder="Username" value={myName} onChange={(e) => setMyName(e.target.value)} />
-                        {!meetingUrl && (<button className="btn w-full btn-primary" onClick={() => createMeeting()} onKeyDown={(e) => e.key === "Enter" && createMeeting()}>Create Meeting</button>)}
+                        {!meetingUrl && (<button className="btn btn-wide  btn-primary" onClick={() => createMeeting()} onKeyDown={(e) => e.key === "Enter" && createMeeting()}>Create Meeting</button>)}
                     </div>
 
-                    <div className="flex flex-col justify-center items-center gap-2">
+                    {!meetingUrl && <div className="divider my-3">OR</div>}
+                    Advanced button
+                    <div className="flex flex-col justify-center items-center gap-6">
                         {!meetingUrl && <input className="input rounded2xl input-primary" placeholder="code" value={inpLink || ""} onChange={(e) => setInpLink(e.target.value)} onKeyDown={(e) => e.key === "Enter" && joinMeeting()} />}
-                        <button className="btn w-full btn-primary" onClick={() => joinMeeting()}>Join Meeting</button>
+                        <button className="btn btn-wide  btn-primary" onClick={() => joinMeeting()}>Join Meeting</button>
                     </div>
+                    <a href="https://github.com/mobinx" target="_blank" className="flex justify-center items-center gap-3 px-4 py-2 rounded-3xl absolute bottom-5 right-2">
+                        <p className="text-white">Developed by</p>
+                        <button type="button" className="p-px rounded-full rotation-animation transition-all shadow-[0_0_20px_0_rgba(245,48,107,0.1)] hover:shadow-[0_0_20px_3px_rgba(245,49,108,.2)] hover:bg-[#fff176] cursor-pointer conic-gradient dark:invert-0 invert hue-rotate-[190deg] dark:hue-rotate-0 transform-gpu "
+                        style={{ background: "conic-gradient(from calc(var(--r2) - 80deg) at var(--x) 20px, transparent 0, #ffc22d 20%, transparent 25%), #452324", }} >
+                        <span className="flex flex-nowrap items-center h-7 px-2 pr-4 font-medium tracking-tighter rounded-full pointer-events-none gap-3 py-4 text-sm bg-base-200 " >
+                        
+                            <Image src="https://github.com/mobinx.png" alt="logo" width={40} height={40} className="w-6 h-6 rounded-full" />
+                            <p className="text-white">MobinX</p>
+                            
+                        </span>
+                    </button>
+                    </a>
                 </div>
             </div>
 
@@ -363,7 +403,7 @@ export default function Meet({ iceServers }: { iceServers: any }) {
                             {pinId.Id == ably.auth.clientId && pinId.type === "normal" &&
                                 <ProfileCard className="h-full" name={myName + " (YOU)"} self={true} isAudioOn={false} isVideoOn={isVideoOn} audioStream={audioStream} videoStream={videoStream} onClick={() => setPinId(null)} />
                             }
-                            {peers.find(peer => peer.socketId == pinId.Id) && pinId.type === "sc" &&
+                            {peers.find(peer => peer.socketId == pinId.Id) && pinId.type === "sc" && peers.find(peer => peer.socketId == pinId.Id)?.isScreenShareOn &&
                                 <ProfileCard className="h-full" name={peers.find(peer => peer.socketId == pinId.Id)?.info.name + " (SCREENSHARE)" + (peers.find(peer => peer.socketId == pinId.Id)?.isScreenShareOn)} isAudioOn={false} isVideoOn={peers.find(peer => peer.socketId == pinId.Id)!.isScreenShareOn} audioStream={peers.find(peer => peer.socketId == pinId.Id)!.audioStream} videoStream={peers.find(peer => peer.socketId == pinId.Id)!.screenShareStream} onClick={() => setPinId(null)} />
                             }
                             {peers.find(peer => peer.socketId == pinId.Id) && pinId.type === "normal" &&
@@ -374,7 +414,7 @@ export default function Meet({ iceServers }: { iceServers: any }) {
                         <div className={`   ${pinId == null ? "h-full w-full grid overflow-auto lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-4 justify-center items-center" : "lg:w-1/3 w-full  flex lg:flex-col overflow-y-auto gap-4 items-center justify-center lg:justify-start lg:h-full h-auto"}  `}>
                             {!(pinId?.Id === ably.auth.clientId && pinId?.type === "normal") && <ProfileCard name={myName + " (YOU)"} isAudioOn={false} isVideoOn={isVideoOn} self={true} audioStream={audioStream} videoStream={videoStream} onClick={() => setPinId({ Id: ably.auth.clientId, type: "normal" })} className={`${pinId == null ? "" : "lg:min-h-48 w-full min-h-[8rem] min-w-[14rem]   lg:min-w-72"}`} />
                             }
-                            {!(pinId?.Id === ably.auth.clientId && pinId?.type === "sc") && isScreenShareOn && <ProfileCard name={myName+ " (YOU)"} isAudioOn={false} isVideoOn={isScreenShareOn} audioStream={audioStream} videoStream={screenShareStream} onClick={() => setPinId({ Id: ably.auth.clientId, type: "sc" })} className={`${pinId == null ? "" : "lg:min-h-48 w-full min-h-[8rem] min-w-[14rem]   lg:min-w-72"}`} />
+                            {!(pinId?.Id === ably.auth.clientId && pinId?.type === "sc") && isScreenShareOn && <ProfileCard name={myName + " (YOU)"} isAudioOn={false} isVideoOn={isScreenShareOn} audioStream={audioStream} videoStream={screenShareStream} onClick={() => setPinId({ Id: ably.auth.clientId, type: "sc" })} className={`${pinId == null ? "" : "lg:min-h-48 w-full min-h-[8rem] min-w-[14rem]   lg:min-w-72"}`} />
                             }
                             {peers.map((peer, key) =>
                                 <Fragment key={key}>
@@ -392,6 +432,13 @@ export default function Meet({ iceServers }: { iceServers: any }) {
                     <div className="absolute lg:bottom-8 bottom-[0.6rem] z-[99] right-3   rounded-3xl bg-gray-900">
                         <button className="btn bg-transparent text-white rounded-3xl " onClick={async () => setIschatBoxOpen(true)}> <MessageSquareShare className="w-6 h-6" /></button>
                     </div>
+
+                    {taostMsg && <div className="toast bottom-[0.9rem] lg:bottom-10 toast-start z-[199]">
+                        <div className="alert alert-info">
+                            <span>{taostMsg}</span>
+                        </div>
+                    </div>
+                    }
 
 
                     {ischatBoxOpen && <div className="absolute flex flex-col justify-center items-center  lg:right-5 top-6 z-[100] min-w-[350px] w-[95%] lg:w-[350px] h-[90%]  bg-white rounded-3xl text-black">
@@ -443,7 +490,7 @@ export default function Meet({ iceServers }: { iceServers: any }) {
                         </div>
 
                         <div className="flex justify-between items-center p-3 w-full">
-                            <input type="text" className="input input-bordered input-sm bg-gray-600 text-white placeholder:text-white w-full max-w-xs" value={myMsg} onChange={(e) => setMyMsg(e.target.value)} onKeyDown={(e) => e.key === "Enter" && sendUIMsg(myMsg)}/>
+                            <input type="text" className="input input-bordered input-sm bg-gray-600 text-white placeholder:text-white w-full max-w-xs" value={myMsg} onChange={(e) => setMyMsg(e.target.value)} onKeyDown={(e) => e.key === "Enter" && sendUIMsg(myMsg)} />
                             <div className="flex gap-3">
                                 <input type="file" className="hidden" ref={fileInputRef} onChange={(e) => { if (e.target.files) sendUIFile(e.target.files[0]); }} />
                                 <button className="btn btn-circle btn-ghost btn-sm bg-transparent " onClick={() => { if (fileInputRef.current) fileInputRef.current.click() }}><PlusCircle className="w-6 h-6" /></button>
