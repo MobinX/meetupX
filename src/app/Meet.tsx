@@ -371,7 +371,7 @@ export default function Meet({ iceServers }: { iceServers: any }) {
                     </div>
 
                     {!meetingUrl && <div className="divider my-3">OR</div>}
-                    Advanced button
+                    
                     <div className="flex flex-col justify-center items-center gap-6">
                         {!meetingUrl && <input className="input rounded2xl input-primary" placeholder="code" value={inpLink || ""} onChange={(e) => setInpLink(e.target.value)} onKeyDown={(e) => e.key === "Enter" && joinMeeting()} />}
                         <button className="btn btn-wide  btn-primary" onClick={() => joinMeeting()}>Join Meeting</button>
