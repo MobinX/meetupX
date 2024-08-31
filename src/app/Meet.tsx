@@ -220,35 +220,23 @@ export default function Meet({ iceServers }: { iceServers: any }) {
             console.log(fileSharingState)
             let name = peers.find(peer => peer.socketId == fileSharingState.peerId)?.info?.name
             setAllMsg(prev => {
-                let fileMsgIndx = prev.findIndex(item => item?.file?.fileId == fileSharingState.fileId)
-                if (fileMsgIndx == -1) {
-                    console.log("file sharing no indx",getCompletedFile(fileSharingState), fileSharingState.peerId)
-                    if(getCompletedFile(fileSharingState) != null){
-                        return prev.concat([{ from: fileSharingState.peerId, url: getCompletedFile(fileSharingState), type: "file", idx: prev.length,name:name ? name: fileSharingState.peerId }])
+                let temp: MsgType[] = []
+                for(let item of prev){
+                    if (item?.file?.fileId !== fileSharingState.fileId) {
+                        temp.push(item)
                     }
-                    return prev.concat([{ from: fileSharingState.peerId, file: fileSharingState, type: "progress", idx: prev.length,name:name ? name: fileSharingState.peerId }])
                 }
-                else if(prev[fileMsgIndx].url == null) {
-                    console.log("file sharing with indx", fileMsgIndx, getCompletedFile(fileSharingState))
-                    let temp = prev;
-                    if(getCompletedFile(fileSharingState) != null){
-                        temp[fileMsgIndx] = { ...prev[fileMsgIndx], url: getCompletedFile(fileSharingState) }
-                        return temp
-                    }
-                    temp[fileMsgIndx] = { ...prev[fileMsgIndx], file: fileSharingState }
-                    return temp
+                temp.push({ from: fileSharingState.peerId, file: fileSharingState, type: "progress", idx: prev.length,name:name ? name: fileSharingState.peerId })
+                return temp
                 }
-                return prev;
-            })
+            )    
+            console.log("allmsg*******************", allMsg)      
         }
-
-    },
-
-
-    /*@ts-ignore*/[fileSharingState,peers])
+    },[fileSharingState,peers])
     useEffect(() => {
         console.log(fileSharingCompleted)
         if (fileSharingCompleted) {
+            let name = peers.find(peer => peer.socketId == fileSharingCompleted.file.peerId)?.info?.name
             setAllMsg(prev => {
                 let fileMsgIndx = prev.findIndex(item => item?.file?.fileId == fileSharingCompleted.file.fileId)
                 let fileExt = fileSharingCompleted.file.fileName.split(".").pop();
@@ -261,16 +249,14 @@ export default function Meet({ iceServers }: { iceServers: any }) {
                         [
                             "jpg", "jpeg", "png", "gif", "bmp", "svg", "webp"
                         ].includes(fileExt) ? "image" : "file") : "file";
-
-                
-                        
-                
-                if (fileMsgIndx != -1) {
-                    let temp = prev;
-                    temp[fileMsgIndx] = { ...prev[fileMsgIndx], file: fileSharingCompleted.file, type: ftype, url: fileSharingCompleted.objectUrl,  }
-                    return temp
+                let temp: MsgType[] = []
+                for(let item of prev){
+                    if (item?.file?.fileId != fileSharingCompleted.file.fileId) {
+                        temp.push(item)
+                    }
                 }
-                return prev;
+                temp.push({ from: fileSharingCompleted.file.peerId, file: fileSharingCompleted.file, type: ftype, idx: prev.length, name: name ? name : fileSharingCompleted.file.peerId ,url:fileSharingCompleted.objectUrl})
+                return temp;
             })
 
             setAllMsg(prev => prev)
@@ -278,7 +264,7 @@ export default function Meet({ iceServers }: { iceServers: any }) {
             setAllMsg(prev => prev)
 
         }
-    },[fileSharingCompleted])
+    },[fileSharingCompleted,peers])
 
     useEffect(() => {
         console.log("allmsg", allMsg)
@@ -413,7 +399,46 @@ export default function Meet({ iceServers }: { iceServers: any }) {
                             <button className="btn btn-circle btn-ghost btn-sm bg-transparent text-red-500" onClick={() => setIschatBoxOpen(false)}><X className="w-6 h-6" /></button>
                         </div>
                         <div className="flex flex-col w-full h-full justify-start items-center flex-1 overflow-y-auto gap-2 px-3">
-                            {allMsg.map((msg, key) => <Msg key={key} type={msg.type} msg={msg ? msg.msg : null} from={msg.from} url={msg.url ? msg.url : null} file={msg.file ? msg.file : null} myId={ably.auth.clientId} name={msg.name ? msg.name : msg.from} />)}
+                            {allMsg.map(({ type, msg, from, url, file, name }, key) => (
+                                    <div className={`flex gap-2 w-full ${ably.auth.clientId === from ? "flex-row-reverse" : "flex-row"}`} key={key} >
+                                    <Avatar name={name || from} />
+                                    {type === "text" && <p className="text-sm bg-gray-700 rounded-lg p-2 text-white w-full"><LinkTagger text={msg || ""} /></p>}
+                                    {type === "image" && url && <div className="flex flex-col justify-between items-center gap-2 p-3 rounded-lg shadow-2xl bg-gray-400 w-full">
+                                        <img src={url} className="w-40 h-40" />
+                                        <div className="flex justify-between items-center w-full">
+                                            <p className="text-white">{file?.fileName}</p>
+                                            <a href={url} download={file?.fileName} className="text-white"><DownloadCloudIcon className="w-4 h-4" /></a>
+                                        </div>
+                                    </div>}
+                                    {type === "video" && url && <div className="flex flex-col justify-between items-center gap-2 p-3 rounded-lg shadow-2xl bg-gray-400 w-full">
+                                        <video src={url} className="w-40 h-40" controls></video>
+                                        <div className="flex justify-between items-center w-full">
+                                            <p className="text-white">{file?.fileName}</p>
+                                            <a href={url} download={file?.fileName} className="text-white"><DownloadCloudIcon className="w-4 h-4" /></a>
+                                        </div>
+                                    </div>}
+                                    {type === "audio" && url && <audio src={url} className="w-full" controls></audio>}
+                                    {type === "file" && url && <div className="flex  justify-between items-center gap-2 p-3 rounded-lg shadow-2xl bg-gray-400 w-full">
+                                        <p className="text-white">{file?.fileName}</p>
+                                        <a href={url} download={file?.fileName} className="text-white"><DownloadCloudIcon className="w-4 h-4" /></a>
+                                    </div>}
+                                    {type === "progress" && <div className="flex flex-col justify-between items-center gap-2 p-3 rounded-lg shadow-2xl bg-gray-400 w-full">
+                                        <div className="flex justify-center items-center w-full">
+                                            <p className="text-white">{file?.fileName}</p>
+                                            <p className="text-white">{file?.completedSize}bytes</p>
+                                        </div>
+                                        <div className="flex justify-end items-center w-full">
+                                            <p className="text-white">{Math.round(file?.progress || 0)}%</p>
+                                        </div>
+                                        <progress value={file?.progress} max="100" className="w-full"></progress>
+                                    </div>}
+                                </div>
+                            ))}
+
+
+
+
+                            {/* {allMsg.map((msg, key) => <Msg key={key} type={msg.type} msg={msg ? msg.msg : null} from={msg.from} url={msg.url ? msg.url : null} file={msg.file ? msg.file : null} myId={ably.auth.clientId} name={msg.name ? msg.name : msg.from} />)} */}
                         </div>
 
                         <div className="flex justify-between items-center p-3 w-full">

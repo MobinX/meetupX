@@ -359,10 +359,10 @@
     semver "^7.3.5"
     tar "^6.1.11"
 
-"@mobinx/easymeet@^1.0.5":
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/@mobinx/easymeet/-/easymeet-1.0.5.tgz#f116691e732ad4f5a2b4d1dad8a83da7a56e7785"
-  integrity sha512-M0eNoUXXcE1k25Tn6V1Qu1yNKf+XnBdAAMoJmcOe9TeXhZzGKWsOl0HsWC6zBaEL37MBO+eMiDnTZ+DJL8WPkg==
+"@mobinx/easymeet@^1.0.6":
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/@mobinx/easymeet/-/easymeet-1.0.6.tgz#37db890bb6f8e6c118e46fbfcc3c0601c1335434"
+  integrity sha512-+hsB5Lvi3IVMcmL7YA0YMUwFXOuKsxR5nAmgDLeWCy45epG2E7AAVxeil3qXsUpk2AUzjH097W6ghzfFB1//9g==
   dependencies:
     process "^0.11.10"
     react "^16.9.0 || ^17 || ^18"
