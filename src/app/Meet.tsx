@@ -378,9 +378,9 @@ export default function Meet({ iceServers }: { iceServers: any }) {
                     </div>
                     <a href="https://github.com/mobinx" target="_blank" className="flex justify-center items-center gap-3 px-4 py-2 rounded-3xl absolute bottom-5 right-2">
                         <p className="text-white">Developed by</p>
-                        <button type="button" className="p-px rounded-full rotation-animation transition-all shadow-[0_0_20px_0_rgba(245,48,107,0.1)] hover:shadow-[0_0_20px_3px_rgba(245,49,108,.2)] hover:bg-[#fff176] cursor-pointer conic-gradient dark:invert-0 invert hue-rotate-[190deg] dark:hue-rotate-0 transform-gpu "
+                        <button type="button" className="p-px rounded-full rotation-animation transition-all shadow-[0_0_20px_0_rgba(245,48,107,0.1)] hover:shadow-[0_0_20px_3px_rgba(245,49,108,.2)] hover:bg-[#fff176] cursor-pointer conic-gradient invert-0  hue-rotate-0 transform-gpu "
                         style={{ background: "conic-gradient(from calc(var(--r2) - 80deg) at var(--x) 20px, transparent 0, #ffc22d 20%, transparent 25%), #452324", }} >
-                        <span className="flex flex-nowrap items-center h-7 px-2 pr-4 font-medium tracking-tighter rounded-full pointer-events-none gap-3 py-4 text-sm bg-base-200 " >
+                        <span className="flex flex-nowrap items-center h-7 px-2 pr-4 font-medium tracking-tighter rounded-full pointer-events-none gap-3 py-4 text-sm bg-base-200 " data-theme="dark" >
                         
                             <Image src="https://github.com/mobinx.png" alt="logo" width={40} height={40} className="w-6 h-6 rounded-full" />
                             <p className="text-white">MobinX</p>
