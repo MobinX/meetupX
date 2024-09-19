@@ -427,7 +427,7 @@ export default function Meet({ iceServers }: { iceServers: any }) {
                     <div className="absolute lg:bottom-8 bottom-[0.6rem] z-[99] left-1/2 transform -translate-x-1/2   rounded-3xl bg-gray-900">
                         <button className="btn btn-primary rounded-3xl rounded-tr-none rounded-br-none" onClick={async () => await toggleCamera()}>{isVideoOn ? <Camera className="w-6 h-6" /> : <CameraOff className="w-6 h-6" />}</button>
                         <button className="btn btn-primary rounded-none" onClick={async () => await toggleAudio()}>{isAudioOn ? <Mic className="w-6 h-6" /> : <MicOff className="w-6 h-6" />}</button>
-                        <button className="btn btn-primary rounded-3xl rounded-tl-none rounded-bl-none" onClick={async () => await toggleScreenShare()}>{isScreenShareOn ? <ScreenShare className="w-6 h-6" /> : <ScreenShareOff className="w-6 h-6" />}</button>
+                        <button className="btn btn-primary rounded-3xl rounded-tl-none rounded-bl-none" onClick={async () => await toggleScreenShare({ video: true , audio: true})}>{isScreenShareOn ? <ScreenShare className="w-6 h-6" /> : <ScreenShareOff className="w-6 h-6" />}</button>
                     </div>
                     <div className="absolute lg:bottom-8 bottom-[0.6rem] z-[99] right-3   rounded-3xl bg-gray-900">
                         <button className="btn btn-primary rounded-3xl " onClick={async () => setIschatBoxOpen(true)}> <MessageSquareShare className="w-6 h-6" /></button>
