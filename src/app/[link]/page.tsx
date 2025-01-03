@@ -7,7 +7,7 @@ const Meet = dynamic(() => import("../Meet"), { ssr: false });
 
 
 export default async function Home() {
-  const response = await fetch("https://virsys.metered.live/api/v1/turn/credentials?apiKey=ca9f4e60bf446fc29401ccb1fa904d110708");
+  const response = await fetch("https://virsys.metered.live/api/v1/turn/credentials?apiKey=9fb58d67a3a41d96bbc3f2450196d0e7125d");
   const iceServers = await response.json();
   console.log(iceServers);
   return (
